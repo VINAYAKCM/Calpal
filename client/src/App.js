@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import MealHistory from './components/MealHistory';
+import Welcome from './Welcome';
 
-function Onboarding({ onComplete }) {
+function Onboarding({ onComplete, userName }) {
   const [formData, setFormData] = useState({
     height: '',
     weight: '',
@@ -33,7 +34,7 @@ function Onboarding({ onComplete }) {
         },
         body: JSON.stringify({
           model: 'llama3.2',
-          prompt: `Explain in 2-3 sentences what it means for a user to have a BMI of ${bmi} (${category}). Use simple, friendly language.`,
+          prompt: `Explain in 2-3 sentences what it means for a user to have a BMI of ${bmi} (${category}). Use simple, friendly language. End with: 'No matter your BMI, CalPal will help you make healthy choices and reach your goals. You're in good hands!'`,
           stream: false
         }),
       });
@@ -82,9 +83,10 @@ function Onboarding({ onComplete }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#212E28] to-[#020202] flex items-center justify-center p-4">
       <div className="w-full max-w-xl">
-        <h1 className="text-3xl font-light text-white text-center mb-8 font-['Instrument_Serif']">
-          Set up your profile to get personalized nutrition recommendations
+        <h1 className="text-3xl font-light text-white text-center mb-2 font-['Instrument_Serif']">
+          {userName ? `Welcome, ${userName}!` : 'Set up your profile to get personalized nutrition recommendations'}
         </h1>
+        <p className="text-base text-gray-300 text-center mb-8 font-['Instrument_Serif']">Please enter your details to get started with personalized nutrition tracking.</p>
         <div className="w-full max-w-md mx-auto">
           <form onSubmit={calculateBMI} className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
@@ -186,11 +188,18 @@ function Onboarding({ onComplete }) {
 
 function App() {
   const [bmiData, setBmiData] = useState(null);
+  const [userName, setUserName] = useState('');
+
+  useEffect(() => {
+    setUserName(localStorage.getItem('calpalUserName') || '');
+  }, []);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Onboarding onComplete={setBmiData} />} />
-        <Route path="/dashboard" element={<Dashboard bmiData={bmiData} />} />
+        <Route path="/" element={<Welcome />} />
+        <Route path="/onboarding" element={<Onboarding onComplete={setBmiData} userName={userName} />} />
+        <Route path="/dashboard" element={<Dashboard bmiData={bmiData} userName={userName} />} />
         <Route path="/history" element={<MealHistory />} />
       </Routes>
     </Router>

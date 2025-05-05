@@ -58,7 +58,8 @@ function Dashboard({ bmiData }) {
     quantity: '',
     unit: 'g',
     calories: '',
-    mealType: 'Breakfast'
+    mealType: 'Breakfast',
+    date: new Date().toISOString().slice(0, 10) // YYYY-MM-DD
   });
   const [foodSuggestions, setFoodSuggestions] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
@@ -180,17 +181,20 @@ function Dashboard({ bmiData }) {
     }
   };
 
+  const handleDateChange = (e) => {
+    setMealData(prev => ({ ...prev, date: e.target.value }));
+  };
+
   const handleMealLog = (e) => {
     e.preventDefault();
     if (!mealData.food || !mealData.quantity || !mealData.calories) {
       alert('Please fill in all fields');
       return;
     }
-
     const newMeal = {
       ...mealData,
       id: Date.now(),
-      timestamp: new Date(),
+      timestamp: new Date(mealData.date + 'T' + new Date().toTimeString().slice(0,8)), // Use selected date, current time
       nutritionalInfo: selectedFood
     };
     setMeals(prev => [...prev, newMeal]);
@@ -206,7 +210,8 @@ function Dashboard({ bmiData }) {
       quantity: '',
       unit: 'g',
       calories: '',
-      mealType: 'Breakfast'
+      mealType: 'Breakfast',
+      date: new Date().toISOString().slice(0, 10)
     });
     setSelectedFood(null);
   };
@@ -239,9 +244,11 @@ function Dashboard({ bmiData }) {
 
   useEffect(() => {
     if (!bmiData) {
-      navigate('/');
+      navigate('/onboarding');
     }
   }, [bmiData, navigate]);
+
+  if (!bmiData) return null; // Prevents destructuring or rendering until redirect
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#212E28] to-[#020202] text-white">
@@ -263,7 +270,20 @@ function Dashboard({ bmiData }) {
       <div className="max-w-6xl flex gap-8 pl-8 animate-fadeinup">
         {/* Left Side - Recent Meals */}
         <div className="w-[260px] flex-shrink-0 animate-fadeinup">
-          <h2 className="text-xl mb-4 font-['Instrument_Serif']">Today's Meals</h2>
+          <div className="flex items-center mb-4">
+            <h2 className="text-xl font-['Instrument_Serif']">Today's Meals</h2>
+            <span className="ml-2 flex items-center gap-1">
+              <span className="text-lg font-['Instrument_Serif']">:</span>
+              <input
+                type="date"
+                name="date"
+                value={mealData.date}
+                onChange={handleDateChange}
+                className="w-32 p-1 text-sm bg-transparent border border-gray-500 rounded-md focus:outline-none focus:border-white font-['Instrument_Serif'] text-left ml-1"
+                required
+              />
+            </span>
+          </div>
           <div className="space-y-3">
             {meals.filter(meal => {
               const today = new Date().toDateString();
