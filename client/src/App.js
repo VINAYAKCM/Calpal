@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import MealHistory from './components/MealHistory';
-import Welcome from './Welcome';
 
-function Onboarding({ onComplete, userName }) {
+function Onboarding({ onComplete, userName, userId }) {
   const [formData, setFormData] = useState({
     height: '',
     weight: '',
@@ -188,19 +187,16 @@ function Onboarding({ onComplete, userName }) {
 
 function App() {
   const [bmiData, setBmiData] = useState(null);
-  const [userName, setUserName] = useState('');
-
-  useEffect(() => {
-    setUserName(localStorage.getItem('calpalUserName') || '');
-  }, []);
+  const userId = 1;
+  const userName = 'User';
 
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Welcome />} />
-        <Route path="/onboarding" element={<Onboarding onComplete={setBmiData} userName={userName} />} />
-        <Route path="/dashboard" element={<Dashboard bmiData={bmiData} userName={userName} />} />
-        <Route path="/history" element={<MealHistory />} />
+        <Route path="/" element={<Onboarding onComplete={setBmiData} userName={userName} userId={userId} />} />
+        <Route path="/onboarding" element={<Onboarding onComplete={setBmiData} userName={userName} userId={userId} />} />
+        <Route path="/dashboard" element={<Dashboard bmiData={bmiData} userId={userId} userName={userName} />} />
+        <Route path="/history" element={<MealHistory userId={userId} />} />
       </Routes>
     </Router>
   );

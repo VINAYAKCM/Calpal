@@ -178,7 +178,7 @@ Remember: Don't give a full health assessment unless specifically requested.`,
         </div>
       )}
 
-      <style jsx>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }

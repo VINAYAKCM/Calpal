@@ -39,7 +39,7 @@ function getMonthMatrix(year, month) {
   return matrix;
 }
 
-export default function MealHistory() {
+export default function MealHistory({ userId }) {
   const [meals, setMeals] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [calendarMonth, setCalendarMonth] = useState(() => {
@@ -48,10 +48,30 @@ export default function MealHistory() {
   });
   const navigate = useNavigate();
 
+  // Fetch all meals for the user for the current month
   useEffect(() => {
-    const savedMeals = localStorage.getItem('meals');
-    if (savedMeals) setMeals(JSON.parse(savedMeals));
-  }, []);
+    if (!userId) return;
+    const fetchMonthMeals = async () => {
+      const { year, month } = calendarMonth;
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      let allMeals = [];
+      for (let d = 1; d <= lastDay.getDate(); d++) {
+        const dateStr = new Date(year, month, d).toISOString().slice(0, 10);
+        try {
+          const res = await fetch(`/api/meals?userId=${userId}&date=${dateStr}`);
+          const data = await res.json();
+          if (Array.isArray(data.meals)) {
+            allMeals = allMeals.concat(data.meals);
+          }
+        } catch {}
+      }
+      // Sort meals by timestamp in descending order (newest first)
+      const sortedMeals = allMeals.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      setMeals(sortedMeals);
+    };
+    fetchMonthMeals();
+  }, [userId, calendarMonth]);
 
   const grouped = groupMealsByDate(meals);
   const mealDates = Object.keys(grouped).map(d => new Date(d).toDateString());
@@ -161,7 +181,7 @@ export default function MealHistory() {
           </div>
         )}
       </div>
-      <style jsx global>{`
+      <style>{`
         @keyframes fadeinup {
           0% { opacity: 0; transform: translateY(24px); }
           100% { opacity: 1; transform: translateY(0); }
